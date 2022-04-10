@@ -1,0 +1,3 @@
+[submodule "modules/flourish-api"]
+	path = modules/flourish-api
+	url = https://github.com/Flourish-IoT/Flourish-API
