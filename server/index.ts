@@ -36,7 +36,7 @@ interface RunScriptParams {
 	scenario: Scenario;
 }
 
-const activateVenvCmd = 'source <venv>/bin/activate';
+const activateVenvCmd = 'source venv/bin/activate';
 const scriptFileDir =
 	'./modules/flourish-api/scripts/simulation/simulate_sensor.py';
 const dataFolderDir = './server/data/';
@@ -47,7 +47,7 @@ app.post('/run', async (req, res) => {
 	if (delay < 1) delay = 1;
 
 	cp.exec(
-		`${activateVenvCmd} && python3 ${scriptFileDir} -i ${plantId} -f ${dataFolderDir}${scenario}.csv -u "${apiUrl}" -d ${delay}`,
+		`cd ./modules/flourish-api/ && ${activateVenvCmd} && cd ../../ && python3 ${scriptFileDir} -i ${plantId} -f ${dataFolderDir}${scenario}.csv -u "${apiUrl}" -d ${delay}`,
 		(err, stdout, stderr) => {
 			if (err) {
 				console.error(err);
