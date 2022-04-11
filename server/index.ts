@@ -46,9 +46,10 @@ const dataFolderDir = './server/data/';
 
 app.post('/run', async (req, res) => {
 	let { plantId, scenario, delay = 0 } = req.body as RunScriptParams;
+	const uploadDataScript = `python3 ${scriptFileDir} -i ${plantId} -f ${dataFolderDir}${scenario}.csv -u "${apiUrl}" -d ${delay}`;
 
 	cp.exec(
-		`${activateVenvCmd} && python3 ${scriptFileDir} -i ${plantId} -f ${dataFolderDir}${scenario}.csv -u "${apiUrl}" -d ${delay}`,
+		`${activateVenvCmd} && ${uploadDataScript}`,
 		(err, stdout, stderr) => {
 			if (err) {
 				console.error(err);
