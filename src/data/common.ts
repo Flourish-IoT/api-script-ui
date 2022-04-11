@@ -5,7 +5,7 @@ export const scenarios = ['Morning', 'Afternoon', 'Night'] as const;
 export type Scenario = typeof scenarios[number];
 
 export interface RunScriptParams {
-	plantId: number;
+	sensorId: number;
 	delay?: number;
 	scenario: Scenario;
 }

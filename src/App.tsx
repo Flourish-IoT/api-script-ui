@@ -5,7 +5,7 @@ import { getScenarioOptions, transition } from './providers/Theme';
 
 export default function App() {
 	const [currentScenario, setCurrentScenario] = useState<Scenario>();
-	const [plantId, setSensorId] = useState(1);
+	const [sensorId, setSensorId] = useState(1);
 	const runScript = useRunScript();
 	const options = getScenarioOptions({ s: currentScenario });
 
@@ -13,7 +13,7 @@ export default function App() {
 		if (scenario === currentScenario) return;
 
 		try {
-			await runScript.mutateAsync({ plantId, scenario, delay: 0 });
+			await runScript.mutateAsync({ sensorId, scenario, delay: 0 });
 			setCurrentScenario(scenario);
 		} catch (err) {
 			console.error(err);
@@ -46,7 +46,7 @@ export default function App() {
 					: 'Select a scenario to start.'}
 			</Typography>
 			<TextField
-				label='Plant ID'
+				label='Sensor ID'
 				inputProps={{
 					inputMode: 'numeric',
 					pattern: '[0-9]*',
@@ -57,7 +57,7 @@ export default function App() {
 						transition,
 					},
 				}}
-				value={plantId}
+				value={sensorId}
 				onChange={(e) => setSensorId(Number(e.target.value))}
 				disabled={runScript.isLoading}
 				sx={{

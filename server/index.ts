@@ -33,7 +33,7 @@ const scenarios = ['Morning', 'Afternoon', 'Night'] as const;
 type Scenario = typeof scenarios[number];
 
 interface RunScriptParams {
-	plantId: number;
+	sensorId: number;
 	delay?: number;
 	scenario: Scenario;
 }
@@ -45,8 +45,8 @@ const scriptFileDir =
 const dataFolderDir = './server/data/';
 
 app.post('/run', async (req, res) => {
-	let { plantId, scenario, delay = 0 } = req.body as RunScriptParams;
-	const uploadDataScript = `python3 ${scriptFileDir} -i ${plantId} -f ${dataFolderDir}${scenario}.csv -u "${apiUrl}" -d ${delay}`;
+	let { sensorId, scenario, delay = 0 } = req.body as RunScriptParams;
+	const uploadDataScript = `python3 ${scriptFileDir} -i ${sensorId} -f ${dataFolderDir}${scenario}.csv -u "${apiUrl}" -d ${delay}`;
 
 	cp.exec(
 		`${activateVenvCmd} && ${uploadDataScript}`,
