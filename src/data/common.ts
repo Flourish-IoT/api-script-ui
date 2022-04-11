@@ -10,10 +10,10 @@ export interface RunScriptParams {
 	scenario: Scenario;
 }
 
-export const ApiUrl = 'http://localhost:5001';
+export const NodeServerUrl = 'http://localhost:5001';
 
 export const AxiosInstance = axios.create({
-	baseURL: ApiUrl,
+	baseURL: NodeServerUrl,
 	timeout: 1000 * 60 * 0.5, // 30s
 });
 
