@@ -3,11 +3,11 @@ import express from 'express';
 import * as cp from 'child_process';
 import cors from 'cors';
 
-const app = express();
-const env = process.env;
-const serverPort = env.PORT ?? 5001;
-const clientPort = 3000;
+// Variables
 
+const app = express();
+const serverPort = 5001;
+const clientPort = 3000;
 const serverUrl = `http://localhost:${serverPort}`;
 const clientUrl = `http://localhost:${clientPort}`;
 const apiUrl = 'http://3.83.190.154:5000';
@@ -27,6 +27,8 @@ app.listen(serverPort, () => {
 	console.log(`Listening at ${serverUrl}`);
 });
 
+// Routing
+
 const scenarios = ['Morning', 'Afternoon', 'Night'] as const;
 type Scenario = typeof scenarios[number];
 
@@ -36,7 +38,8 @@ interface RunScriptParams {
 	scenario: Scenario;
 }
 
-const activateVenvCmd = 'source venv/bin/activate';
+const activateVenvCmd =
+	'cd ./modules/flourish-api/ && source venv/bin/activate && cd ../../';
 const scriptFileDir =
 	'./modules/flourish-api/scripts/simulation/simulate_sensor.py';
 const dataFolderDir = './server/data/';
@@ -44,10 +47,8 @@ const dataFolderDir = './server/data/';
 app.post('/run', async (req, res) => {
 	let { plantId, scenario, delay = 0 } = req.body as RunScriptParams;
 
-	if (delay < 1) delay = 1;
-
 	cp.exec(
-		`cd ./modules/flourish-api/ && ${activateVenvCmd} && cd ../../ && python3 ${scriptFileDir} -i ${plantId} -f ${dataFolderDir}${scenario}.csv -u "${apiUrl}" -d ${delay}`,
+		`${activateVenvCmd} && python3 ${scriptFileDir} -i ${plantId} -f ${dataFolderDir}${scenario}.csv -u "${apiUrl}" -d ${delay}`,
 		(err, stdout, stderr) => {
 			if (err) {
 				console.error(err);
