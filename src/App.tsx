@@ -10,8 +10,6 @@ export default function App() {
 	const options = getScenarioOptions({ s: currentScenario });
 
 	const handleRunScript = async (scenario: Scenario) => {
-		if (scenario === currentScenario) return;
-
 		try {
 			await runScript.mutateAsync({ sensorId, scenario, delay: 0 });
 			setCurrentScenario(scenario);
