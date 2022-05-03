@@ -13,9 +13,9 @@ export default function QueryProvider({
 					},
 				},
 				queryCache: new QueryCache({
-					onError: (error) => {
-						alert(
-							`An error occurred while fetching data: ${error}`
+					onError: (error, { queryKey }) => {
+						console.error(
+							`Network error with query key ${queryKey}: ${error}.`
 						);
 					},
 				}),

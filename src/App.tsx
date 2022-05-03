@@ -1,17 +1,40 @@
-import { IconButton, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
-import { Scenario, scenarios, useRunScript } from './data/common';
+import {
+	Scenario,
+	scenarios,
+	usePlants,
+	useRunScript,
+	usePushScenario,
+	useSensors,
+	useUser,
+} from './data/common';
 import { getScenarioOptions, transition } from './providers/Theme';
+import {
+	IconButton,
+	Typography,
+	InputLabel,
+	MenuItem,
+	FormControl,
+	Select,
+} from '@mui/material';
 
 export default function App() {
 	const [currentScenario, setCurrentScenario] = useState<Scenario>();
-	const [sensorId, setSensorId] = useState(1);
-	const runScript = useRunScript();
+	const [userId, setUserId] = useState(3);
+	const [sensorId, setSensorId] = useState(3);
+	const pushScenario = usePushScenario();
+	const { data: userData, isLoading: userDataIsLoading } = useUser(userId);
+	const { data: sensors, isLoading: sensorsIsLoading } = useSensors(userId);
+	const { data: plants, isLoading: plantsIsLoading } = usePlants(userId);
+
+	if (userDataIsLoading || sensorsIsLoading || plantsIsLoading) return null;
+	if (!userData || !sensors || !plants) return null;
+
 	const options = getScenarioOptions({ s: currentScenario });
 
 	const handleRunScript = async (scenario: Scenario) => {
 		try {
-			await runScript.mutateAsync({ sensorId, scenario, delay: 0 });
+			await pushScenario.mutateAsync({ sensorId, scenario });
 			setCurrentScenario(scenario);
 		} catch (err) {
 			console.error(err);
@@ -35,42 +58,46 @@ export default function App() {
 				color={options.textColor}
 				sx={{ paddingTop: 10, paddingBottom: 10 }}
 			>
-				{runScript.isLoading
+				{pushScenario.isLoading
 					? 'Uploading scenario...'
-					: runScript.isError
+					: pushScenario.isError
 					? 'Failed to upload scenario.'
 					: !!currentScenario
 					? `The scenario is ${currentScenario.toLowerCase()}.`
 					: 'Select a scenario to start.'}
 			</Typography>
-			<TextField
-				label='Sensor ID'
-				inputProps={{
-					inputMode: 'numeric',
-					pattern: '[0-9]*',
-					minLength: 0,
-					maxLength: 1,
-					style: {
-						color: options.uiColor,
-						transition,
-					},
-				}}
-				value={sensorId}
-				onChange={(e) => setSensorId(Number(e.target.value))}
-				disabled={runScript.isLoading}
-				sx={{
-					'& label': {
-						color: options.uiColor,
-						transition,
-					},
-					'& .MuiOutlinedInput-root': {
-						'& fieldset, &:hover fieldset': {
-							borderColor: options.uiColor,
-							transition,
-						},
-					},
-				}}
-			/>
+			<div>
+				<FormControl>
+					<InputLabel id='demo-simple-select-label'>User</InputLabel>
+					<Select
+						label='User'
+						value={userId}
+						sx={{ width: 150, mr: 1 }}
+						onChange={({ target }) =>
+							setUserId(Number(target.value))
+						}
+					>
+						<MenuItem value={userData.id}>{userData.name}</MenuItem>
+					</Select>
+				</FormControl>
+				<FormControl>
+					<InputLabel id='demo-simple-select-label'>
+						Sensor
+					</InputLabel>
+					<Select
+						label='Sensor'
+						value={sensorId}
+						sx={{ width: 150 }}
+						onChange={({ target }) =>
+							setSensorId(Number(target.value))
+						}
+					>
+						{sensors.map((s) => (
+							<MenuItem value={s.id}>{s.name} (1 plant)</MenuItem>
+						))}
+					</Select>
+				</FormControl>
+			</div>
 			<div
 				className='controls'
 				style={{
@@ -85,7 +112,7 @@ export default function App() {
 					<IconButton
 						key={s}
 						onClick={() => handleRunScript(s)}
-						disabled={runScript.isLoading}
+						disabled={pushScenario.isLoading}
 						sx={{ mx: i === 1 ? 5 : 0, transition }}
 					>
 						{getScenarioOptions({ s }).icon}
