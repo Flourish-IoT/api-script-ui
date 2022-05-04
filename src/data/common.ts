@@ -4,12 +4,6 @@ import axios from 'axios';
 export const scenarios = ['Morning', 'Afternoon', 'Night'] as const;
 export type Scenario = typeof scenarios[number];
 
-export interface RunScriptParams {
-	sensorId: number;
-	delay?: number;
-	scenario: Scenario;
-}
-
 export const NodeServerUrl = 'http://localhost:5001';
 export const ApiServerUrl = 'http://3.83.190.154:5000/v1';
 
@@ -23,30 +17,30 @@ export const ApiAxiosInstance = axios.create({
 	timeout: 1000 * 60 * 0.5, // 30s
 });
 
-export const useRunScript = () => {
-	return useMutation(async (params: RunScriptParams) => {
+export type DataMode = 'Instant' | 'Duration';
+
+export interface DurationScenarioParams {
+	scenario: Scenario;
+	sensorId: number;
+	delay: number;
+}
+
+export const useDurationScenario = () => {
+	return useMutation(async (params: DurationScenarioParams) => {
 		return (await ServerAxiosInstance.post<string>(`/run`, params)).data;
 	});
 };
 
 export interface User {
-	id: number;
-	name: string;
+	userId: number;
 	email: string;
 	username: string;
-	preferences: {
-		temperatureUnit: string;
-		confidenceRating: any;
-	};
 }
 
 export const useUser = (userId: number) => {
 	return useQuery(['users', userId], async () => {
 		const query = `/users/${userId}`;
-		// return (await ApiAxiosInstance.get<User>(query)).data;
-		// const res = await ApiAxiosInstance.get<User>(query);
-		const res = await axios.get<User>(ApiServerUrl + query);
-		console.log(res);
+		const res = await ApiAxiosInstance.get<User>(query);
 		return res.data;
 	});
 };
@@ -69,20 +63,20 @@ export const useSensors = (userId: number) => {
 interface Plant {
 	id: number;
 	name: string;
+	scientificName: string;
 	image: string | null;
+	deviceId: number;
+	plantType: {
+		id: number;
+		scientificName: string;
+	};
 	gaugeRatings: {
 		light: number;
 		temperature: number;
 		humidity: number;
 		soilMoisture: number;
 	};
-	sensorData: {
-		timestamp: string;
-		temperature: number;
-		humidity: number;
-		soilMoisture: number;
-		light: number;
-	};
+	sensorData: ScenarioData;
 }
 
 export interface ScenarioData {
@@ -134,7 +128,7 @@ interface PushScenarioParams {
 	scenario: Scenario;
 }
 
-export const usePushScenario = () => {
+export const useInstantScenario = () => {
 	return useMutation(async ({ sensorId, scenario }: PushScenarioParams) => {
 		const query = `/devices/${sensorId}/data`;
 		return (

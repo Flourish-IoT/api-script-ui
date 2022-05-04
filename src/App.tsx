@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import {
 	Scenario,
+	DataMode,
 	scenarios,
 	usePlants,
-	useRunScript,
-	usePushScenario,
+	useDurationScenario,
+	useInstantScenario,
 	useSensors,
 	useUser,
 } from './data/common';
@@ -22,19 +23,37 @@ export default function App() {
 	const [currentScenario, setCurrentScenario] = useState<Scenario>();
 	const [userId, setUserId] = useState(3);
 	const [sensorId, setSensorId] = useState(3);
-	const pushScenario = usePushScenario();
+	const [dataMode, setDataMode] = useState<DataMode>('Instant');
+	const instantScenario = useInstantScenario();
+	const durationScenario = useDurationScenario();
 	const { data: userData, isLoading: userDataIsLoading } = useUser(userId);
 	const { data: sensors, isLoading: sensorsIsLoading } = useSensors(userId);
 	const { data: plants, isLoading: plantsIsLoading } = usePlants(userId);
 
-	if (userDataIsLoading || sensorsIsLoading || plantsIsLoading) return null;
-	if (!userData || !sensors || !plants) return null;
+	if (
+		userDataIsLoading ||
+		sensorsIsLoading ||
+		plantsIsLoading ||
+		!userData ||
+		!sensors ||
+		!plants
+	)
+		return null;
 
 	const options = getScenarioOptions({ s: currentScenario });
+	const plantsInSensor = plants.filter((p) => p.deviceId === sensorId);
 
 	const handleRunScript = async (scenario: Scenario) => {
 		try {
-			await pushScenario.mutateAsync({ sensorId, scenario });
+			if (dataMode === 'Instant') {
+				await instantScenario.mutateAsync({ sensorId, scenario });
+			} else {
+				await durationScenario.mutateAsync({
+					sensorId,
+					scenario,
+					delay: 0,
+				});
+			}
 			setCurrentScenario(scenario);
 		} catch (err) {
 			console.error(err);
@@ -58,9 +77,9 @@ export default function App() {
 				color={options.textColor}
 				sx={{ paddingTop: 10, paddingBottom: 10 }}
 			>
-				{pushScenario.isLoading
+				{instantScenario.isLoading
 					? 'Uploading scenario...'
-					: pushScenario.isError
+					: instantScenario.isError
 					? 'Failed to upload scenario.'
 					: !!currentScenario
 					? `The scenario is ${currentScenario.toLowerCase()}.`
@@ -72,12 +91,14 @@ export default function App() {
 					<Select
 						label='User'
 						value={userId}
-						sx={{ width: 150, mr: 1 }}
+						sx={{ width: 200, mr: 1 }}
 						onChange={({ target }) =>
 							setUserId(Number(target.value))
 						}
 					>
-						<MenuItem value={userData.id}>{userData.name}</MenuItem>
+						<MenuItem value={userData.userId}>
+							{userData.username}
+						</MenuItem>
 					</Select>
 				</FormControl>
 				<FormControl>
@@ -87,16 +108,33 @@ export default function App() {
 					<Select
 						label='Sensor'
 						value={sensorId}
-						sx={{ width: 150 }}
+						sx={{ width: 200 }}
 						onChange={({ target }) =>
 							setSensorId(Number(target.value))
 						}
 					>
-						{sensors.map((s) => (
-							<MenuItem value={s.id}>{s.name} (1 plant)</MenuItem>
-						))}
+						{sensors.map((s, i, a) => {
+							const plantNames = plants
+								.filter((p) => p.deviceId === s.id)
+								.map((p) => p.name)
+								.join(', ');
+							return (
+								<MenuItem key={s.id} value={s.id}>
+									{s.name} ({plantNames})
+								</MenuItem>
+							);
+						})}
 					</Select>
 				</FormControl>
+			</div>
+			<div>
+				<Typography
+					variant='h3'
+					color={options.textColor}
+					sx={{ paddingTop: 10, paddingBottom: 10 }}
+				>
+					{plantsInSensor.map((p) => p.name).join(', ')}
+				</Typography>
 			</div>
 			<div
 				className='controls'
@@ -112,7 +150,7 @@ export default function App() {
 					<IconButton
 						key={s}
 						onClick={() => handleRunScript(s)}
-						disabled={pushScenario.isLoading}
+						disabled={instantScenario.isLoading}
 						sx={{ mx: i === 1 ? 5 : 0, transition }}
 					>
 						{getScenarioOptions({ s }).icon}
