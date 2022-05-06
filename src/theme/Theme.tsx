@@ -2,13 +2,13 @@ import { Scenario } from '../data/common';
 import MorningIcon from '../lib/icons/Morning';
 import AfternoonIcon from '../lib/icons/Afternoon';
 import NightIcon from '../lib/icons/Night';
-import { Water } from '@mui/icons-material';
 import Humidity from '../lib/icons/Humidity';
 import Sunlight from '../lib/icons/Sunlight';
 import Temperature from '../lib/icons/Temperature';
 import MorningImg from '../lib/backgrounds/Morning.json';
 import AfternoonImg from '../lib/backgrounds/Afternoon.json';
 import NightImg from '../lib/backgrounds/Night.json';
+import SoilMoisture from '../lib/icons/SoilMoisture';
 
 export interface ScenarioOptions {
 	bgImage: string;
@@ -40,7 +40,7 @@ export const getButtonIcon = (s: Scenario, active: boolean) => {
 export const getMetricIcon = (s: PlantMetric) => {
 	switch (s) {
 		case 'Water':
-			return <Water />;
+			return <SoilMoisture />;
 		case 'Sunlight':
 			return <Sunlight />;
 		case 'Temperature':
