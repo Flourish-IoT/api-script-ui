@@ -2,28 +2,24 @@ import { useState } from 'react';
 import {
 	Scenario,
 	DataMode,
-	scenarios,
 	usePlants,
 	useDurationScenario,
 	useInstantScenario,
 	useSensors,
 	useUser,
 } from './data/common';
-import { getScenarioOptions, transition } from './providers/Theme';
-import {
-	IconButton,
-	Typography,
-	InputLabel,
-	MenuItem,
-	FormControl,
-	Select,
-} from '@mui/material';
+import { getScenarioOptions } from './theme/Theme';
+import { Typography, Box } from '@mui/material';
+import PlantReadings from './lib/components/PlantReadings';
+import ScenarioControls from './lib/components/ScenarioControls';
+import CurrentPlants from './lib/components/CurrentPlants';
+import CredentialFilters from './lib/components/CredentialFilters';
 
 export default function App() {
 	const [currentScenario, setCurrentScenario] = useState<Scenario>();
 	const [userId, setUserId] = useState(3);
 	const [sensorId, setSensorId] = useState(3);
-	const [dataMode, setDataMode] = useState<DataMode>('Instant');
+	const [dataMode] = useState<DataMode>('Instant');
 	const instantScenario = useInstantScenario();
 	const durationScenario = useDurationScenario();
 	const { data: userData, isLoading: userDataIsLoading } = useUser(userId);
@@ -43,10 +39,15 @@ export default function App() {
 	const options = getScenarioOptions({ s: currentScenario });
 	const plantsInSensor = plants.filter((p) => p.deviceId === sensorId);
 
-	const handleRunScript = async (scenario: Scenario) => {
+	const handleChangeScenario = async (scenario: Scenario) => {
 		try {
 			if (dataMode === 'Instant') {
-				await instantScenario.mutateAsync({ sensorId, scenario });
+				await instantScenario.mutateAsync({
+					userId,
+					plantIds: plantsInSensor.map((p) => p.id),
+					sensorId,
+					scenario,
+				});
 			} else {
 				await durationScenario.mutateAsync({
 					sensorId,
@@ -54,6 +55,7 @@ export default function App() {
 					delay: 0,
 				});
 			}
+
 			setCurrentScenario(scenario);
 		} catch (err) {
 			console.error(err);
@@ -61,102 +63,47 @@ export default function App() {
 	};
 
 	return (
-		<main
-			style={{
-				flex: 1,
-				backgroundColor: options.bgColor,
+		<Box
+			component='main'
+			sx={{
+				flexGrow: 1,
+				backgroundImage: `url("${options.bgImage}")`,
+				backgroundSize: 'cover',
+				backgroundPosition: 'center',
 				display: 'flex',
 				flexDirection: 'column',
-				justifyContent: 'center',
 				alignItems: 'center',
-				transition,
+				p: 5,
 			}}
 		>
-			<Typography
-				variant='h3'
-				color={options.textColor}
-				sx={{ paddingTop: 10, paddingBottom: 10 }}
-			>
+			<Typography variant='h3' fontWeight='bold'>
 				{instantScenario.isLoading
-					? 'Uploading scenario...'
+					? 'Updating scenario...'
 					: instantScenario.isError
-					? 'Failed to upload scenario.'
+					? 'Failed to upload scenario'
 					: !!currentScenario
-					? `The scenario is ${currentScenario.toLowerCase()}.`
-					: 'Select a scenario to start.'}
+					? `The scenario is ${currentScenario}`
+					: 'Select a scenario to start'}
 			</Typography>
-			<div>
-				<FormControl>
-					<InputLabel id='demo-simple-select-label'>User</InputLabel>
-					<Select
-						label='User'
-						value={userId}
-						sx={{ width: 200, mr: 1 }}
-						onChange={({ target }) =>
-							setUserId(Number(target.value))
-						}
-					>
-						<MenuItem value={userData.userId}>
-							{userData.username}
-						</MenuItem>
-					</Select>
-				</FormControl>
-				<FormControl>
-					<InputLabel id='demo-simple-select-label'>
-						Sensor
-					</InputLabel>
-					<Select
-						label='Sensor'
-						value={sensorId}
-						sx={{ width: 200 }}
-						onChange={({ target }) =>
-							setSensorId(Number(target.value))
-						}
-					>
-						{sensors.map((s, i, a) => {
-							const plantNames = plants
-								.filter((p) => p.deviceId === s.id)
-								.map((p) => p.name)
-								.join(', ');
-							return (
-								<MenuItem key={s.id} value={s.id}>
-									{s.name} ({plantNames})
-								</MenuItem>
-							);
-						})}
-					</Select>
-				</FormControl>
-			</div>
-			<div>
-				<Typography
-					variant='h3'
-					color={options.textColor}
-					sx={{ paddingTop: 10, paddingBottom: 10 }}
-				>
-					{plantsInSensor.map((p) => p.name).join(', ')}
-				</Typography>
-			</div>
-			<div
-				className='controls'
-				style={{
-					height: '100%',
-					display: 'flex',
-					flexDirection: 'row',
-					justifyContent: 'center',
-					alignItems: 'center',
-				}}
-			>
-				{scenarios.map((s, i) => (
-					<IconButton
-						key={s}
-						onClick={() => handleRunScript(s)}
-						disabled={instantScenario.isLoading}
-						sx={{ mx: i === 1 ? 5 : 0, transition }}
-					>
-						{getScenarioOptions({ s }).icon}
-					</IconButton>
-				))}
-			</div>
-		</main>
+
+			{!!currentScenario && (
+				<PlantReadings currentScenario={currentScenario} />
+			)}
+
+			<ScenarioControls
+				currentScenario={currentScenario}
+				disabled={instantScenario.isLoading}
+				onClick={handleChangeScenario}
+			/>
+
+			<CredentialFilters
+				userId={userId}
+				sensorId={sensorId}
+				onUserIdChange={(newValue) => setUserId(newValue)}
+				onSensorIdChange={(newValue) => setSensorId(newValue)}
+			/>
+
+			<CurrentPlants plantsInSensor={plantsInSensor} />
+		</Box>
 	);
 }

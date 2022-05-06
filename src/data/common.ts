@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from 'react-query';
 import axios from 'axios';
+import { getScenarioData } from '../lib/util/helper';
 
 export const scenarios = ['Morning', 'Afternoon', 'Night'] as const;
 export type Scenario = typeof scenarios[number];
@@ -60,7 +61,7 @@ export const useSensors = (userId: number) => {
 	});
 };
 
-interface Plant {
+export interface Plant {
 	id: number;
 	name: string;
 	image: string | null;
@@ -87,42 +88,9 @@ export interface ScenarioData {
 	additional: {};
 }
 
-const getScenarioData = (scenario: Scenario): ScenarioData => {
-	switch (scenario) {
-		case 'Morning': {
-			return {
-				timestamp: new Date(),
-				temperature: 8,
-				humidity: 40,
-				soilMoisture: 15,
-				light: 4300,
-				additional: {},
-			};
-		}
-		case 'Afternoon': {
-			return {
-				timestamp: new Date(),
-				temperature: 15,
-				humidity: 40,
-				soilMoisture: 5,
-				light: 4300,
-				additional: {},
-			};
-		}
-		case 'Night': {
-			return {
-				timestamp: new Date(),
-				temperature: 35,
-				humidity: 0,
-				soilMoisture: 0,
-				light: 10000,
-				additional: {},
-			};
-		}
-	}
-};
-
 interface PushScenarioParams {
+	userId: number;
+	plantIds: number[];
 	sensorId: number;
 	scenario: Scenario;
 }

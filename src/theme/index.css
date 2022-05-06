@@ -1,0 +1,34 @@
+@import url(./normalize.css);
+
+@font-face {
+	font-family: 'Filson';
+	src: local('Filson'),
+		url(../lib/fonts/Filson-Regular.ttf) format('truetype');
+}
+
+@font-face {
+	font-family: 'Filson';
+	font-weight: bold;
+	src: local('Filson'), url(../lib/fonts/Filson-Bold.ttf) format('truetype');
+}
+
+html,
+body,
+#root,
+main {
+	width: 100vw;
+	min-height: 100vh;
+}
+
+.MuiTypography-root {
+	margin: 0;
+	font-family: Filson, sans-serif !important;
+}
+
+main > * {
+	margin: 24px 0;
+}
+
+svg {
+	transition: fill 0.2s ease-in-out;
+}
