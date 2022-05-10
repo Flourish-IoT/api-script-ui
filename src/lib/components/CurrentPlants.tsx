@@ -2,10 +2,10 @@ import { Box, Typography } from '@mui/material';
 import { Plant } from '../../data/common';
 
 interface CurrentPlantsProps {
-	plantsInSensor: Plant[];
+	plantsToShow: Plant[];
 }
 
-export default function CurrentPlants({ plantsInSensor }: CurrentPlantsProps) {
+export default function CurrentPlants({ plantsToShow }: CurrentPlantsProps) {
 	return (
 		<Box
 			sx={{
@@ -14,7 +14,7 @@ export default function CurrentPlants({ plantsInSensor }: CurrentPlantsProps) {
 				justifyContent: 'center',
 			}}
 		>
-			{plantsInSensor.map((p) => (
+			{plantsToShow.map((p) => (
 				<Box
 					key={p.id}
 					sx={{

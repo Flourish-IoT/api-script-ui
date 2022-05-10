@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from 'react-query';
 import axios from 'axios';
-import { getScenarioData } from '../lib/util/helper';
+import { getScenarioUploadData } from '../lib/util/helper';
 
 export const scenarios = ['Morning', 'Afternoon', 'Night'] as const;
 export type Scenario = typeof scenarios[number];
@@ -88,28 +88,33 @@ export interface ScenarioData {
 	additional: {};
 }
 
-interface PushScenarioParams {
-	userId: number;
-	plantIds: number[];
-	sensorId: number;
-	scenario: Scenario;
-}
-
-export const useInstantScenario = () => {
-	return useMutation(async ({ sensorId, scenario }: PushScenarioParams) => {
-		const query = `/devices/${sensorId}/data`;
-		return (
-			await ApiAxiosInstance.post<string>(
-				query,
-				getScenarioData(scenario)
-			)
-		).data;
-	});
-};
-
 export const usePlants = (userId: number) => {
 	return useQuery(['users', userId, 'plants'], async () => {
 		const query = `/users/${userId}/plants`;
 		return (await ApiAxiosInstance.get<Plant[]>(query)).data;
+	});
+};
+
+interface PushScenarioParams {
+	userId: number;
+	plantIds: number[];
+	scenario: Scenario;
+}
+
+export const useInstantScenario = () => {
+	const query = (id: number) => `/devices/${id}/data`;
+
+	return useMutation(async ({ plantIds, scenario }: PushScenarioParams) => {
+		return await Promise.all(
+			plantIds.map(
+				async (id) =>
+					(
+						await ApiAxiosInstance.post<string>(
+							query(id),
+							getScenarioUploadData(scenario)
+						)
+					).data
+			)
+		);
 	});
 };

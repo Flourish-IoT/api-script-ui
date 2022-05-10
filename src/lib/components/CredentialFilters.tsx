@@ -1,17 +1,19 @@
 import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { useUser, useSensors, usePlants } from '../../data/common';
+import { useUser, useSensors, usePlants, DataMode } from '../../data/common';
 
 interface CredentialFiltersProps {
 	userId: number;
-	sensorId: number;
 	onUserIdChange: (userId: number) => void;
+	dataMode: DataMode;
+	sensorId: number | undefined;
 	onSensorIdChange: (userId: number) => void;
 }
 
 export default function CredentialFilters({
 	userId,
-	sensorId,
 	onUserIdChange,
+	dataMode,
+	sensorId,
 	onSensorIdChange,
 }: CredentialFiltersProps) {
 	const { data: userData } = useUser(userId);
@@ -37,29 +39,31 @@ export default function CredentialFilters({
 					</MenuItem>
 				</Select>
 			</FormControl>
-			<FormControl>
-				<InputLabel id='sensor-select'>Sensor</InputLabel>
-				<Select
-					label='Sensor'
-					value={sensorId}
-					sx={{ width: 200 }}
-					onChange={({ target }) =>
-						onSensorIdChange(Number(target.value))
-					}
-				>
-					{sensors.map((s, i, a) => {
-						const plantNames = plants
-							.filter((p) => p.deviceId === s.id)
-							.map((p) => p.name)
-							.join(', ');
-						return (
-							<MenuItem key={s.id} value={s.id}>
-								{s.name} ({plantNames})
-							</MenuItem>
-						);
-					})}
-				</Select>
-			</FormControl>
+			{dataMode === 'Duration' && (
+				<FormControl>
+					<InputLabel id='sensor-select'>Sensor</InputLabel>
+					<Select
+						label='Sensor'
+						value={sensorId ?? ''}
+						sx={{ width: 200 }}
+						onChange={({ target }) =>
+							onSensorIdChange(Number(target.value))
+						}
+					>
+						{sensors.map((s, i, a) => {
+							const plantNames = plants
+								.filter((p) => p.deviceId === s.id)
+								.map((p) => p.name)
+								.join(', ');
+							return (
+								<MenuItem key={s.id} value={s.id}>
+									{s.name} ({plantNames})
+								</MenuItem>
+							);
+						})}
+					</Select>
+				</FormControl>
+			)}
 		</Box>
 	);
 }
