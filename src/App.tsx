@@ -47,11 +47,11 @@ export default function App() {
 	const handleChangeScenario = async (scenario: Scenario) => {
 		try {
 			if (dataMode === 'Instant') {
-				// await instantScenario.mutateAsync({
-				// 	userId,
-				// 	plantIds: plantsToShow.map((p) => p.id),
-				// 	scenario,
-				// });
+				await instantScenario.mutateAsync({
+					userId,
+					plantIds: plantsToShow.map((p) => p.id),
+					scenario,
+				});
 			} else {
 				if (!sensorId) return;
 				await durationScenario.mutateAsync({
