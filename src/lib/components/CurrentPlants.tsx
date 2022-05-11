@@ -14,7 +14,7 @@ interface CurrentPlantsProps {
 const getPlantSvg = (scientificName: string, styles: CSSProperties) => {
 	switch (scientificName.trim()) {
 		case 'Crassula ovata':
-			return <Chlorophytum style={{ ...styles, width: 200 }} />;
+			return <Chlorophytum style={{ ...styles, width: 170 }} />;
 		case 'Chlorophytum comosum':
 			return <Crassula style={{ ...styles, width: 50 }} />;
 		case 'Epipremnum aureum':
